@@ -1,0 +1,10 @@
+repos:
+- repo: https://github.com/ambv/black
+  rev: stable
+  hooks:
+  - id: black
+    description: 'Black: The uncompromising Python code formatter'
+    entry: black
+    language: python
+    language_version: python3
+    args: [-l120]
