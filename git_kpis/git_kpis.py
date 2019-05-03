@@ -13,6 +13,7 @@ import re
 import datetime
 
 from pprint import pprint
+from pprint import pformat
 
 from .logging import get_logger
 from .github_client import GitHubClient
@@ -54,19 +55,21 @@ def main():
     key = args.key
 
     tag_created_at = client.get_release(repository, head_version).created_at
+    _logger.debug("Release created_at: {}".format(tag_created_at))
 
     comparison = client.get_comparison(repository, base_version, head_version)
     differences = []
     for commit in comparison.commits:
         git_commit = commit.commit
+        _logger.debug(pformat(vars(git_commit)))
         if re.search(r".*" + key + ".*", git_commit.message, re.I):
-            difference = tag_created_at - git_commit.author.date
-            # We want to filter out commit date == tag date
-            if difference > datetime.timedelta(0):
-                differences.append(difference)
+            differences.append(tag_created_at - git_commit.author.date)
 
     print()
-    print("Lead time: ", sum(differences, datetime.timedelta()) / len(differences))
+    if len(differences) > 0:
+        print("Lead time: ", sum(differences, datetime.timedelta()) / len(differences))
+    else:
+        print("Lead time could not be calculated. No commits match the given search key {}".format(key))
     print()
 
 
